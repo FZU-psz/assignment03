@@ -31,8 +31,6 @@ def gradient(output_node, node_list):
     reverse_topo_order = reversed(find_topo_sort([output_node]))
 
     for node in reverse_topo_order:
-        # print(node)
-        # print(type(node.op))
         # sum the adjoints from all output nodes
         output_grad = sum_node_list(node_to_output_grads_list[node])
         node_to_output_grad[node] = output_grad
@@ -47,7 +45,9 @@ def gradient(output_node, node_list):
     grad_node_list = [node_to_output_grad[node] for node in node_list]
     return grad_node_list
 
-
+# ========================
+# Below: Helper functions
+# ========================
 def find_topo_sort(node_list):
     """Given a list of nodes, return a topo ordering of nodes ending in them.
     A simple algorithm is to do a post-order DFS traversal on the given nodes,
@@ -57,19 +57,15 @@ def find_topo_sort(node_list):
     """
     visited = set()
     topo_order = []
-    # print(len(node_list))
-    # for node in node_list:
-    #     print(node)
-    #     print("===")
+
     for node in node_list:
-        print(node)
+        # print(node)
         topo_sort_dfs(node, visited, topo_order)
     return topo_order
 
 
 def topo_sort_dfs(node:Node, visited, topo_order):
     """Post-order DFS"""
-    # print(type(node))
     if node in visited:
         return
     visited.add(node)
@@ -80,6 +76,5 @@ def topo_sort_dfs(node:Node, visited, topo_order):
 
 def sum_node_list(node_list):
     """Custom sum function in order to avoid create redundant nodes in Python sum implementation."""
-    # from operator import add
     from functools import reduce
     return reduce(mul_op, node_list)

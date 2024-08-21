@@ -94,10 +94,33 @@ class ZeroLikeOp(Op):
         return np.zeros(input_vals[0].shape)
     def gradient(self, node, output_grad):
         return [zerolike_op(node.inputs[0])]
-    
+
+class MatMulOp(Op):
+    def __call__(self,node_A, node_B,trans_A=False,trans_B=False):
+        new_node = Op.__call__(self)
+        new_node.name  = f"{node_A.name} MatMal {node_B.name}"
+        new_node.trans_A = trans_A # A or A^T
+        new_node.trans_B = trans_B # B or B^T
+        new_node.inputs = [node_A, node_B]
+        return new_node
+    def compute(self, node, input_vals):
+        val_a,val_b = input_vals[0], input_vals[1]
+        if node.trans_A:
+            val_a = input_vals[0].T # np.transpose(input_vals[0])
+        if node.trans_B:
+            val_b= input_vals[1].T
+        return np.matmul(val_a, val_b)
+    def gradient(self, node, output_grad):
+        #  Y = A B => dA = dY B^T, dB = A^T dY
+        grad_a = matmul_op(output_grad, node.inputs[1],trans_B=True)
+        grad_b = matmul_op(node.inputs[0], output_grad,trans_A=True)
+
+        return [grad_a, grad_b]
+
 add_op = AddOp()
 add_const_op = AddConstOp()
 mul_op = MulOp()
 mul_const_op = MulConstOp()
+matmul_op = MatMulOp()
 oneslike_op = OnesLikeOp()
 zerolike_op = ZeroLikeOp()
