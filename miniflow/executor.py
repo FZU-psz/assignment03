@@ -1,11 +1,11 @@
 from op import *
-
+from typing import Dict
 class Executor:
     def __init__(self, eval_node_list):
         self.eval_node_list = eval_node_list
         self.graph = find_topo_sort(self.eval_node_list)
 
-    def run(self, feed_dict):
+    def run(self, feed_dict:Dict):
         
         # calculate the value of each node in the graph
         node_to_val_map = {}
@@ -24,7 +24,7 @@ class Executor:
         # return the val of each node 
         return [node_to_val_map[node] for node in self.eval_node_list]
 
-def gradient(output_node, node_list):
+def gradient(output_node:Node, node_list:List[Node])->List[Node]:
 
     node_to_output_grads_list = {}
     node_to_output_grads_list[output_node] = [oneslike_op(output_node)]
@@ -68,7 +68,6 @@ def find_topo_sort(node_list)->List[Node]:
     topo_order = []
 
     for node in node_list:
-        # print(node)
         topo_sort_dfs(node, visited, topo_order)
     return topo_order
 
