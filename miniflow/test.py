@@ -145,7 +145,22 @@ def test_matmul_two_vars():
     assert np.array_equal(x1_grad_val,np.matmul(np.ones_like(y_val),x2_val.T))
     assert np.array_equal(x2_grad_val,np.matmul(x1_val.T,np.ones_like(y_val)))
 
-
+def test_mul_dep():
+    x1 = Variable('x1')
+    x2 = Variable('x2')
+    x3 = matmul_op(x1,x2)
+    x4 = mul_op(x3,x2)
+    y = add_op(x4,x1)
+    
+    grad_x1,grad_x2,grad_x3,grad_x4= gradient(y, [x1,x2,x3,x4])
+    x1_val  = np.array([[1,2],[3,4]])
+    x2_val  = np.array([[5,6],[7,8]])
+    
+    y_val = Executor([y]).run({x1:x1_val,x2:x2_val})[0]
+    assert isinstance(y,Node)
+    assert np.array_equal(y_val,np.matmul(x1_val,x2_val)*x2_val+x1_val)
+    # res = Executor([y, grad_x1,grad_x2,grad_x3,grad_x4]).run({x1:x1_val,x2:x2_val})
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--case', type=str, default='0', help='choose you case')
@@ -153,6 +168,7 @@ if __name__ == "__main__":
     
     print(f'===========\033[92mYou test case option is \033[91m{args.case}\033[0m==========') 
     test_funcs = [test_one,test_var_add_var, test_var_add_const, test_var_mul_var, test_var_mul_const, test_add_mul_mix_1, test_add_mul_mix_2, test_add_mul_mix_3, test_matmul_two_vars]
+    test_funcs.append(test_mul_dep)
     if args.case == 'all':
         for i in range(len(test_funcs)):
             test_funcs[i]()
