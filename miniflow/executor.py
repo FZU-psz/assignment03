@@ -14,6 +14,7 @@ class Executor:
         
         # Now you have the value of the input nodes(feed_dict) and computation graph(self.graph)
         # TODO:Traverse graph in topological order and compute values for all nodes,write you code below
+        # hint: use node.op.compute(node, input_vals) to get value of node
         for node in self.graph:
             if node in node_to_val_map:
                 continue
