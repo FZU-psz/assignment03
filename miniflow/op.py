@@ -59,9 +59,9 @@ class MulOp(Op):
     def compute(self, node, input_vals):
         return input_vals[0] * input_vals[1]
     def gradient(self, node, output_grad):
-        grad_1 = mul_op(node.inputs[0],output_grad)
-        grad_2 = mul_op(node.inputs[1],output_grad)
-        return [grad_1,grad_2]
+        grad_a = mul_op(node.inputs[1],output_grad)
+        grad_b = mul_op(node.inputs[0],output_grad)
+        return [grad_a,grad_b]
 
 class MulConstOp(Op):
     def __call__(self,node,const_attr):
@@ -112,11 +112,16 @@ class MatMulOp(Op):
         return np.matmul(val_a, val_b)
     def gradient(self, node, output_grad):
         #  Y = A B => dA = dY B^T, dB = A^T dY
+        #  According to the formula above, you should cal grad_a and grad_b 
+        #  and reuturn [grad_a, grad_b]
+        
+        # TODO: Write your code below
         grad_a = matmul_op(output_grad, node.inputs[1],trans_B=True)
         grad_b = matmul_op(node.inputs[0], output_grad,trans_A=True)
 
         return [grad_a, grad_b]
 
+# NOTION: Here, Instantiate the your operators
 add_op = AddOp()
 add_const_op = AddConstOp()
 mul_op = MulOp()
