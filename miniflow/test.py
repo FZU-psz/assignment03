@@ -179,16 +179,49 @@ def test_Linear_layer():
     
     W_val = np.array([[1,2],[3,4]])
     X_val = np.array([[5,6],[7,8]])
-    b_val = np.array([1,1])
-    
+    b_val = np.array([3,3])
+
     y_val, W_grad_val, X_grad_val, b_grad_val = Executor([y, grad_W, grad_X, grad_b]).run({W:W_val, X:X_val, b:b_val})
-    print(y_val, W_grad_val, X_grad_val, b_grad_val,sep='\n')
-    # print(np.ones_like(b_val))
+    # print(y_val, W_grad_val, X_grad_val, b_grad_val,sep='\n')
     assert np.array_equal(y_val,np.matmul(X_val,W_val)+b_val)
     assert np.array_equal(W_grad_val,np.matmul(X_val.T,np.ones_like(y_val)))
     assert np.array_equal(X_grad_val,np.matmul(np.ones_like(y_val),W_val.T))
     assert np.array_equal(b_grad_val,np.ones_like(y_val).sum(axis=0))
     
+def test_mlp():
+    W1 = Variable('W1')
+    W2 = Variable('W2')
+    X = Variable('X')
+    b1 = Variable('b1')
+    b2 = Variable('b2')
+    
+    z1 = matmul_op(X,W1)
+    y1 = add_op(z1,broadcast_op(b1,z1))
+    
+    z2 = matmul_op(y1,W2)
+    y2 = add_op(z2,broadcast_op(b2,z2))
+    
+    grad_W1,grad_W2,grad_y1,grad_b1,grad_b2 = gradient(y2, [W1,W2,y1,b1,b2])
+    
+    W1_val = np.array([[1,2],[3,4]])
+    W2_val = np.array([[5,6],[7,8]])
+    X_val = np.array([[1,2],[3,4]])
+    b1_val = np.array([1,1])
+    b2_val = np.array([1,1])
+    
+    y2_val, y1_val, W1_grad_val, W2_grad_val, y1_grad_val, b1_grad_val, b2_grad_val = Executor([y2, y1,grad_W1, grad_W2, grad_y1, grad_b1, grad_b2]).run({W1:W1_val, W2:W2_val, X:X_val, b1:b1_val, b2:b2_val})
+    # print(b1_grad_val,b2_grad_val)
+    # print(np.ones_like(y2_val).sum(axis=0))
+    # print(y1_grad_val)
+    # print(y2_val)
+    assert isinstance(y2,Node)
+    assert np.array_equal(y2_val,np.matmul(np.matmul(X_val,W1_val)+b1_val,W2_val)+b2_val)
+    assert np.array_equal(W2_grad_val,np.matmul(y1_val.T,np.ones_like(y2_val)))
+    assert np.array_equal(b2_grad_val,np.ones_like(y2_val).sum(axis=0))
+    
+    assert np.array_equal(y1_grad_val,np.matmul(np.ones_like(y2_val),W2_val.T))
+    assert np.array_equal(W1_grad_val,np.matmul(X_val.T,y1_grad_val))
+    assert np.array_equal(b1_grad_val,y1_grad_val.sum(axis=0))
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--case', type=str, default='0', help='choose you case')
@@ -198,6 +231,7 @@ if __name__ == "__main__":
     test_funcs = [test_forward,test_gradient,test_var_add_var, test_var_add_const, test_var_mul_var, test_var_mul_const, test_add_mul_mix_1, test_add_mul_mix_2, test_add_mul_mix_3, test_matmul_two_vars]
     test_funcs.append(test_mul_dep)
     test_funcs.append(test_Linear_layer)
+    test_funcs.append(test_mlp)
     if args.case == 'all':
         for i in range(len(test_funcs)):
             test_funcs[i]()
