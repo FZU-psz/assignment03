@@ -3,10 +3,17 @@ from node import *
 from executor import *
 import argparse
 
-def test_one():
+def test_forward():
     x = Variable('x')
     y = x
+    x_val = np.array([1,2,3])
+    y_val = Executor([y]).run({x:x_val})[0]
+    assert isinstance(y,Node)
+    assert np.array_equal(y_val,x_val)
     
+def test_gradient():
+    x = Variable('x')
+    y = x
     grad_x = gradient(y, [x])[0]
     
     x_val = np.array([1,2,3])
@@ -167,12 +174,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     print(f'===========\033[92mYou test case option is \033[91m{args.case}\033[0m==========') 
-    test_funcs = [test_one,test_var_add_var, test_var_add_const, test_var_mul_var, test_var_mul_const, test_add_mul_mix_1, test_add_mul_mix_2, test_add_mul_mix_3, test_matmul_two_vars]
+    test_funcs = [test_forward,test_gradient,test_var_add_var, test_var_add_const, test_var_mul_var, test_var_mul_const, test_add_mul_mix_1, test_add_mul_mix_2, test_add_mul_mix_3, test_matmul_two_vars]
     test_funcs.append(test_mul_dep)
     if args.case == 'all':
         for i in range(len(test_funcs)):
             test_funcs[i]()
-            print(f'\033[94mTest case {i+1} passed.\033[0m')
+            print(f'\033[94mTest case {i} passed.\033[0m')
     else :
         case_num_to_test_func = {str(i): test_funcs[i] for i in range(len(test_funcs))}
         case_num_to_test_func[args.case]()
