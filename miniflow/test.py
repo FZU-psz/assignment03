@@ -167,6 +167,27 @@ def test_mul_dep():
     assert isinstance(y,Node)
     assert np.array_equal(y_val,np.matmul(x1_val,x2_val)*x2_val+x1_val)
     # res = Executor([y, grad_x1,grad_x2,grad_x3,grad_x4]).run({x1:x1_val,x2:x2_val})
+def test_Linear_layer():
+    W = Variable('W')
+    X  = Variable('X')
+    b = Variable('b')
+    
+    z = matmul_op(X,W)
+    y = add_op(z,broadcast_op(b,z))
+    
+    grad_W,grad_X,grad_b = gradient(y, [W,X,b])
+    
+    W_val = np.array([[1,2],[3,4]])
+    X_val = np.array([[5,6],[7,8]])
+    b_val = np.array([1,1])
+    
+    y_val, W_grad_val, X_grad_val, b_grad_val = Executor([y, grad_W, grad_X, grad_b]).run({W:W_val, X:X_val, b:b_val})
+    print(y_val, W_grad_val, X_grad_val, b_grad_val,sep='\n')
+    # print(np.ones_like(b_val))
+    assert np.array_equal(y_val,np.matmul(X_val,W_val)+b_val)
+    assert np.array_equal(W_grad_val,np.matmul(X_val.T,np.ones_like(y_val)))
+    assert np.array_equal(X_grad_val,np.matmul(np.ones_like(y_val),W_val.T))
+    assert np.array_equal(b_grad_val,np.ones_like(y_val).sum(axis=0))
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -176,6 +197,7 @@ if __name__ == "__main__":
     print(f'===========\033[92mYou test case option is \033[91m{args.case}\033[0m==========') 
     test_funcs = [test_forward,test_gradient,test_var_add_var, test_var_add_const, test_var_mul_var, test_var_mul_const, test_add_mul_mix_1, test_add_mul_mix_2, test_add_mul_mix_3, test_matmul_two_vars]
     test_funcs.append(test_mul_dep)
+    test_funcs.append(test_Linear_layer)
     if args.case == 'all':
         for i in range(len(test_funcs)):
             test_funcs[i]()
