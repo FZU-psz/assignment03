@@ -176,8 +176,38 @@ class MatMulOp(Op):
         grad_b = matmul_op(node.inputs[0], output_grad, trans_A=True)
 
         return [grad_a, grad_b]
-
-
+class ReduceSumOp(Op):
+    def __call__(self, node, axis=0, keepdims=False):
+        new_node = Op.__call__(self)
+        new_node.name = f"ReduceSum({node.name})"
+        new_node.inputs = [node]
+        new_node.axis = axis # default 0
+        new_node.keepdims = keepdims # default False
+        return new_node
+    def compute(self, node, input_vals):
+        # y = np.sum(x, axis=axis, keepdims=keepdims)
+        return np.sum(input_vals[0], axis=0)
+    def gradient(self, node, output_grad):
+        # y = np.sum(x, axis=axis, keepdims=keepdims) => dx = dy
+        return [broadcast_op(output_grad, node.inputs[0])]
+    
+class BroadcastOp(Op):
+    def __call__(self, node_A, node_B):
+        new_node = Op.__call__(self)
+        new_node.name = f"(Broadcast{node_A.name} to {node_B.name}'shape)"
+        new_node.inputs = [node_A, node_B]
+        return new_node
+    def compute(self, node, input_vals):
+        # y = B + a # broadcast a to B's shape
+        a_val = input_vals[0]
+        B_val = input_vals[1]   
+        return np.broadcast_to(a_val, B_val.shape) 
+    def gradient(self, node, output_grad):
+        # y =  => dB = dy, da = dy
+        grad_a = reducesum_op(output_grad,axis=0,keepdims=False)
+        grad_B = zerolike_op(node.inputs[1])
+        return [grad_a,grad_B]
+    
 # NOTION: Here, Instantiate the your operators
 add_op = AddOp()
 add_const_op = AddConstOp()
@@ -186,3 +216,5 @@ mul_const_op = MulConstOp()
 matmul_op = MatMulOp()
 oneslike_op = OnesLikeOp()
 zerolike_op = ZeroLikeOp()
+broadcast_op = BroadcastOp()
+reducesum_op = ReduceSumOp()
