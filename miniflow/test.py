@@ -219,9 +219,11 @@ def test_mlp():
     b1 = Variable('b1')
     b2 = Variable('b2')
 
+    # y1 = X*W1+b1
     z1 = matmul_op(X, W1)
     y1 = add_op(z1, broadcast_op(b1, z1))
 
+    # y2 = y1*W2+b2
     z2 = matmul_op(y1, W2)
     y2 = add_op(z2, broadcast_op(b2, z2))
 
@@ -236,10 +238,7 @@ def test_mlp():
 
     y2_val, y1_val, W1_grad_val, W2_grad_val, y1_grad_val, b1_grad_val, b2_grad_val = Executor(
         [y2, y1, grad_W1, grad_W2, grad_y1, grad_b1, grad_b2]).run({W1: W1_val, W2: W2_val, X: X_val, b1: b1_val, b2: b2_val})
-    # print(b1_grad_val,b2_grad_val)
-    # print(np.ones_like(y2_val).sum(axis=0))
-    # print(y1_grad_val)
-    # print(y2_val)
+    # print(y2_val, y1_val, W1_grad_val, W2_grad_val, y1_grad_val, b1_grad_val, b2_grad_val,sep='\n')
     assert isinstance(y2, Node)
     assert np.array_equal(y2_val, np.matmul(
         np.matmul(X_val, W1_val)+b1_val, W2_val)+b2_val)
@@ -252,6 +251,18 @@ def test_mlp():
     assert np.array_equal(W1_grad_val, np.matmul(X_val.T, y1_grad_val))
     assert np.array_equal(b1_grad_val, y1_grad_val.sum(axis=0))
 
+def test_relu():
+    x = Variable('x')
+    y = relu_op(x)
+    grad_x = gradient(y, [x])[0]
+
+    x_val = np.array([2, 0, -2])
+    y_val, x_grad_val = Executor([y, grad_x]).run({x: x_val})
+    # print(y_val, x_grad_val)
+
+    assert isinstance(y, Node)
+    assert np.array_equal(y_val, np.array([2, 0, 0]))
+    assert np.array_equal(x_grad_val, np.array([1, 0, 0]))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -266,6 +277,7 @@ if __name__ == "__main__":
     test_funcs.append(test_mul_dep)
     test_funcs.append(test_Linear_layer)
     test_funcs.append(test_mlp)
+    test_funcs.append(test_relu)
     if args.case == 'all':
         for i in range(len(test_funcs)):
             test_funcs[i]()
