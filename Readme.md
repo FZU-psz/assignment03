@@ -35,6 +35,7 @@ grad_x1 , grad_x2 = gradient algorithm according graph
 [https://zh.d2l.ai/chapter_multilayer-perceptrons/backprop.html]
 [https://zh.d2l.ai/chapter_preliminaries/autograd.html]
 [http://dlsys.cs.washington.edu/pdf/lecture4.pdf]
+
 需要在**TODO**的地方补充代码，使得框架完整,**hint**标签是对应的提示,并不是所有地方都有提示
 ## task0
 阅读源码，补充代码，跑通case0
