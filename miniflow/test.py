@@ -251,6 +251,7 @@ def test_mlp():
     assert np.array_equal(W1_grad_val, np.matmul(X_val.T, y1_grad_val))
     assert np.array_equal(b1_grad_val, y1_grad_val.sum(axis=0))
 
+
 def test_relu():
     x = Variable('x')
     y = relu_op(x)
@@ -263,6 +264,7 @@ def test_relu():
     assert isinstance(y, Node)
     assert np.array_equal(y_val, np.array([2, 0, 0]))
     assert np.array_equal(x_grad_val, np.array([1, 0, 0]))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
