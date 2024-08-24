@@ -2,14 +2,18 @@
 
 
 class SGD:
-    def __init__(self, learning_rate=1e-2):
+    def __init__(self, learning_rate=1e-2,params={}):
         self.learning_rate = learning_rate
-
-    def update(self, params):
-        # param :(val, grad_val)
-        for param in params:
-            param[0]+= -self.learning_rate * param[1]
-
+        self.params = params
+    def update(self,grad_map):
+        # param :(node,val)
+        for node,val in self.params.items():
+            self.params[node] = self.params[node] - self.learning_rate * grad_map[node]
+            
+    def print_params(self):
+        for node,val in self.params.items():
+            print(f'{node}:\n{val}')
+            
 def sgd_update_param( val, grad_val, learning_rate=1e-2):
     """
     Updates the value of each trainable with SGD.
