@@ -1,4 +1,4 @@
-from op import *
+from .op import *
 from typing import Dict
 class Executor:
     def __init__(self, eval_node_list):

@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from node import Node
+from .node import Node
 
 
 class Op:  # abstract class, you should inherit this class to implement your own operator
