@@ -210,11 +210,38 @@ class BroadcastOp(Op):
         return np.broadcast_to(a_val, B_val.shape)
 
     def gradient(self, node, output_grad):
-        # y =  => dB = dy, da = dy
+        # y = B + a => dB = dy, da = dy
         grad_a = reducesum_op(output_grad, axis=0, keepdims=False)
         grad_B = zerolike_op(node.inputs[1])
         return [grad_a, grad_B]
 
+class ReLuOp(Op):
+    def __call__(self, node):
+        new_node = Op.__call__(self)
+        new_node.name = f"ReLu({node.name})"
+        new_node.inputs = [node]
+        return new_node
+
+    def compute(self, node, input_vals):
+        return np.maximum(input_vals[0], 0)
+
+    def gradient(self, node, output_grad):
+        return [relu_gradient_op(node.inputs[0],output_grad)]
+
+class ReLuGradientOp(Op):
+    def __call__(self, node_A, node_B):
+        new_node = Op.__call__(self)
+        new_node.name = f"ReLuGradient({node_A.name})"
+        new_node.inputs = [node_A, node_B]
+        return new_node
+
+    def compute(self, node, input_vals):
+        # y = Relu(a) => dy = 1 if a>0 else 0
+        sign = np.where(input_vals[0]>0,1,0)
+        # sign = (np.sign(input_vals[0])+1)  # (-1 or 0 or 1) + 1 => (0 or 1 or 2)
+        return input_vals[1]*sign
+    def gradient(self, node, output_grad):
+        pass # ReLuGradientOp is the end of the gradient chain, no gradient to pass back
 
 # NOTION: Here, Instantiate the your operators
 add_op = AddOp()
@@ -226,3 +253,5 @@ oneslike_op = OnesLikeOp()
 zerolike_op = ZeroLikeOp()
 broadcast_op = BroadcastOp()
 reducesum_op = ReduceSumOp()
+relu_op = ReLuOp()
+relu_gradient_op = ReLuGradientOp()
