@@ -215,6 +215,7 @@ class BroadcastOp(Op):
         grad_B = zerolike_op(node.inputs[1])
         return [grad_a, grad_B]
 
+
 class ReLuOp(Op):
     def __call__(self, node):
         new_node = Op.__call__(self)
@@ -226,7 +227,8 @@ class ReLuOp(Op):
         return np.maximum(input_vals[0], 0)
 
     def gradient(self, node, output_grad):
-        return [relu_gradient_op(node.inputs[0],output_grad)]
+        return [relu_gradient_op(node.inputs[0], output_grad)]
+
 
 class ReLuGradientOp(Op):
     def __call__(self, node_A, node_B):
@@ -237,11 +239,70 @@ class ReLuGradientOp(Op):
 
     def compute(self, node, input_vals):
         # y = Relu(a) => dy = 1 if a>0 else 0
-        sign = np.where(input_vals[0]>0,1,0)
+        sign = np.where(input_vals[0] > 0, 1, 0)
         # sign = (np.sign(input_vals[0])+1)  # (-1 or 0 or 1) + 1 => (0 or 1 or 2)
         return input_vals[1]*sign
+
     def gradient(self, node, output_grad):
-        pass # ReLuGradientOp is the end of the gradient chain, no gradient to pass back
+        pass  # ReLuGradientOp is the end of the gradient chain, no gradient to pass back
+
+
+def softmax(x, axis=-1):
+    # x shape (N,q)
+    # return shape (N,q)
+    new_x = x - np.max(x, axis=axis, keepdims=True)  # avoid overflow
+    exp_x = np.exp(new_x)
+    # numpy's broadcast mechanism
+    return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
+
+class SoftmaxOp(Op):
+    def __call__(self, node):
+        new_node = Op.__call__(self)
+        new_node.name = f"Softmax({node.name})"
+        new_node.inputs = [node]
+        return new_node
+    def compute(self,node,input_vals):
+        return softmax(input_vals[0])
+    def gradient(self,node,output_grad):
+        pass  # SoftmaxOp is the end of the gradient chain, no gradient to pass back
+    
+class SoftmaxCrossEntropyLoss(Op):
+    def __call__(self, node_A, node_B) -> Node:
+        new_node = Op.__call__(self)
+        new_node.name = f"CrossEntryopyLoss({node_A.name},{node_B.name})"
+        new_node.inputs = [node_A, node_B]
+        new_node.is_mean = True
+        return new_node
+
+    def compute(self, node, input_vals):
+        ''' Cross Entropy Loss
+        loss(y,y_hat) = -sum(y*log(y_hat))
+        y_hat = softmax(output)
+        How to cal gradient of output?
+        '''
+        y_true = input_vals[0] 
+        o = input_vals[1]
+        y_hat = softmax(o) 
+        cross_entropy_loss = -np.sum(y_true*np.log(y_hat), axis=1)
+        if node.is_mean:
+            cross_entropy_loss = np.mean(cross_entropy_loss)
+        return cross_entropy_loss
+
+    def gradient(self, node, output_grad):
+        '''
+        loss(y,y_hat) = -sum(y*log(y_hat))
+        y_hat = softmax(o)
+        
+        do  = (softmax(o) - y)*d(loss)
+        we donn't neet to calculate uptate of y
+        dy = 0
+        
+        grad_o = (softmax(o) - y)*d(loss)
+        '''
+        grad_o = mul_op(add_op(softmax_op(node.inputs[1]),mul_const_op(node.inputs[0],-1)),output_grad)
+        grad_y_true = zerolike_op(node.inputs[1])
+        
+        return [grad_y_true, grad_o]
 
 # NOTION: Here, Instantiate the your operators
 add_op = AddOp()
@@ -255,3 +316,5 @@ broadcast_op = BroadcastOp()
 reducesum_op = ReduceSumOp()
 relu_op = ReLuOp()
 relu_gradient_op = ReLuGradientOp()
+softmax_op = SoftmaxOp()
+softmax_cross_entropy_loss = SoftmaxCrossEntropyLoss()

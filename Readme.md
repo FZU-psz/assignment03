@@ -32,9 +32,9 @@ grad_x1 , grad_x2 = gradient algorithm according graph
 ````
 **reference**:
 
-[https://zh.d2l.ai/chapter_multilayer-perceptrons/backprop.html]
-[https://zh.d2l.ai/chapter_preliminaries/autograd.html]
-[http://dlsys.cs.washington.edu/pdf/lecture4.pdf]
+- [https://zh.d2l.ai/chapter_multilayer-perceptrons/backprop.html]
+- [https://zh.d2l.ai/chapter_preliminaries/autograd.html]
+- [http://dlsys.cs.washington.edu/pdf/lecture4.pdf]
 
 需要在**TODO**的地方补充代码，使得框架完整,**hint**标签是对应的提示,并不是所有地方都有提示
 ## task0
@@ -54,3 +54,13 @@ python test.py --case 1
 ```shell
 python test.py --case all
 ```
+
+# NEXT
+补充Optimizer等代码, 跑通train_loop_test.py
+尝试完善框架，使得能用该框架训练MNIST
+
+# ADVANCED (Optional)
+优化该框架：代码优化，或者对矩阵计算优化，计算图优化，使用cuda,tvm...尽可能地让其运算更快
+
+**TODO**:
+benchmark:使用上一题的MINIST训练代码
