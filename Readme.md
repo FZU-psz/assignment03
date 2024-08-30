@@ -56,8 +56,9 @@ python test.py --case all
 ```
 
 # NEXT
-补充Optimizer等代码, 跑通train_loop_test.py
-尝试完善框架，使得能用该框架训练MNIST
+测试代码`test_train.py`
+补充Optimizer等代码, 跑通train_loop_test
+尝试完善框架，使得能用该框架训练MNIST,跑通train_loop_minist
 
 # ADVANCED (Optional)
 优化该框架：代码优化，或者对矩阵计算优化，计算图优化，使用cuda,tvm...尽可能地让其运算更快
