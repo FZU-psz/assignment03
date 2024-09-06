@@ -1,5 +1,7 @@
-from .op import *
-from typing import Dict
+
+from miniflow.op import *
+from miniflow.node import Node
+from typing import Dict,List
 class Executor:
     def __init__(self, eval_node_list):
         self.eval_node_list = eval_node_list

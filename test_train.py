@@ -118,4 +118,5 @@ if __name__ == "__main__":
     num_epoch = 20
     batch_size = 16
     learning_rate = 0.01
+    # train_loop_test()
     train_loop_minist()

@@ -61,7 +61,7 @@ python test.py --case all
 尝试完善框架，使得能用该框架训练MNIST,跑通train_loop_minist
 
 # ADVANCED (Optional)
-优化该框架：代码优化，或者对矩阵计算优化，计算图优化，使用cuda,tvm...尽可能地让其运算更快
+优化该框架：代码优化，或者对矩阵计算优化，计算图优化，使用cuda,tvm...发挥你的想象，尽可能地让其运算更快
 
 **TODO**:
 benchmark:使用上一题的MINIST训练代码

@@ -1,6 +1,6 @@
 
-from node import *
-from executor import *
+from miniflow.node import *
+from miniflow.executor import *
 import argparse
 
 
